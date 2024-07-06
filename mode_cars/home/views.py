@@ -1,22 +1,17 @@
-from rest_framework import viewsets
-from .models import UserData, ShopOwner, Product, Post, Comment, Like
-from .serializers import UserDataSerializer, ShopOwnerSerializer, ProductSerializer, PostSerializer, CommentSerializer, LikeSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import CustomTokenObtainPairSerializer
+
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework import status
-from .serializers import RegisterSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from .models import UserData, ShopOwner, Product, Post, Comment, Like
+from .serializers import (
+    UserDataSerializer, ShopOwnerSerializer, ProductSerializer, PostSerializer,
+    CommentSerializer, LikeSerializer, RegisterSerializer, TokenSerializers
+)
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-    
-    
-    
-    
-    
-
+    serializer_class = TokenSerializers
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -27,7 +22,6 @@ class RegisterView(generics.CreateAPIView):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
 
 class UserDataViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

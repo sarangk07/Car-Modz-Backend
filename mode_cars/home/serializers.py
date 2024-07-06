@@ -1,7 +1,10 @@
+
 from rest_framework import serializers
 from .models import UserData, ShopOwner, Product, Post, Comment, Like
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -24,28 +27,42 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-
-User = get_user_model()
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'fullname', 'is_shopOwner')
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
-        print(f"Attempting to authenticate user: {attrs['username']}")
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        data['user'] = UserSerializer(self.user).data
-        return data
-
 class UserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserData
-        fields = ['id', 'username', 'email', 'fullname', 'car', 'profile_pic', 'is_shopOwner']
+        fields = ('id', 'username', 'email', 'fullname', 'is_shopOwner')
+
+
+class TokenSerializers(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['username'] = user.username
+        return token
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            raise ValidationError("No active account found with the given credentials")
+
+        if user.is_blocked:
+            raise ValidationError("User is blocked. Contact admin.")
+
+        if not user.is_active:
+            raise ValidationError("User is inactive. Contact admin.")
+
+        refresh = self.get_token(user)
+        data = {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': UserDataSerializer(user).data
+        }
+
+        return data
 
 class ShopOwnerSerializer(serializers.ModelSerializer):
     class Meta:
