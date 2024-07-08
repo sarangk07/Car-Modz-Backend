@@ -12,7 +12,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserData
-        fields = ['username', 'email', 'password', 'fullname', 'car', 'profile_pic', 'is_shopOwner']
+        fields = ['username', 'email', 'password', 'fullname', 'car', 'profile_pic', 'is_shopOwner','is_admin']
 
     def create(self, validated_data):
         user = UserData.objects.create(
@@ -21,7 +21,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             fullname=validated_data.get('fullname', ''),
             car=validated_data.get('car', ''),
             profile_pic=validated_data.get('profile_pic', None),
-            is_shopOwner=validated_data.get('is_shopOwner', False)
+            is_shopOwner=validated_data.get('is_shopOwner', False),
+            # is_admin=validated_data.get('is_admin', False),
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -31,6 +32,11 @@ class UserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserData
         fields = ('id', 'username', 'email', 'fullname', 'is_shopOwner')
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserData
+        fields = ('id', 'username', 'email', 'fullname', 'car', 'profile_pic', 'is_shopOwner')
 
 
 class TokenSerializers(TokenObtainPairSerializer):

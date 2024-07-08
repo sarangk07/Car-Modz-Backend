@@ -4,24 +4,62 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from .models import UserData, ShopOwner, Product, Post, Comment, Like
 from .serializers import (
     UserDataSerializer, ShopOwnerSerializer, ProductSerializer, PostSerializer,
-    CommentSerializer, LikeSerializer, RegisterSerializer, TokenSerializers
+    CommentSerializer, LikeSerializer, RegisterSerializer, TokenSerializers,UserSerializer
 )
+from django.contrib.auth import get_user_model
+
+
+
+
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = TokenSerializers
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+
+User = get_user_model()
+class UserInfoView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username):
+        if request.user.username != username:
+            return Response({"error": "You can only access your own information"}, status=403)
+        
+        user = User.objects.filter(username=username).first()
+        print("user::::::",User )
+        if not user:
+            return Response({"error": "User not found"}, status=404)
+        
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+
+class DeleteAccountView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "User account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
 
 class UserDataViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]

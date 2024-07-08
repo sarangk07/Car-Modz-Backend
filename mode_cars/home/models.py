@@ -14,7 +14,7 @@ class UserManager(BaseUserManager):
             username=username,
             fullname=fullname,
         )
-        user.is_active = True  # Ensure user is active
+        user.is_active = True  
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -67,70 +67,6 @@ class UserData(AbstractBaseUser):
         return hasattr(self, 'shopowner')
 
 
-# class UserManager(BaseUserManager):
-#     def create_user(self, username, email, password=None, fullname=None):
-#         if not email:
-#             raise ValueError('User must have an email address')
-#         if not username:
-#             raise ValueError('User must have a username')
-
-#         user = self.model(
-#             email=self.normalize_email(email),
-#             username=username,
-#             fullname=fullname,   
-#         )
-#         user.is_blocked = False
-#         user.set_password(password)
-#         user.save(using=self._db)
-#         return user
-    
-#     def create_superuser(self, email, username, fullname="superadmin", password=None):
-#         user = self.create_user(
-#             email=self.normalize_email(email),
-#             username=username,
-#             password=password,
-#             fullname=fullname,
-#         )
-#         user.is_admin = True
-#         user.is_superadmin = True
-#         user.save(using=self._db)
-#         return user
-
-# class UserData(AbstractBaseUser):
-#     username = models.CharField(max_length=50, unique=True, null=True, blank=True)
-#     email = models.EmailField(max_length=150, unique=True, null=True, blank=True)
-#     fullname = models.CharField(max_length=80, null=True, blank=True)
-#     car = models.CharField(max_length=150, null=True, blank=True)
-#     profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    
-#     is_admin = models.BooleanField(default=False)      
-#     is_active = models.BooleanField(default=True)      
-#     is_shopOwner = models.BooleanField(default=False)
-#     is_blocked = models.BooleanField(default=False, blank=True)
-    
-#     created_at = models.DateTimeField(auto_now_add=True)
-
-#     USERNAME_FIELD = 'username'
-#     REQUIRED_FIELDS = ['email']
-    
-#     objects = UserManager()
-    
-#     def __str__(self):
-#         return self.email
-    
-#     def has_perm(self, perm, obj=None):
-#         return True
-
-#     def has_module_perms(self, app_label):
-#         return True
-    
-#     @property
-#     def is_staff(self):
-#         return self.is_admin
-    
-#     def is_shop_owner(self):
-#         return hasattr(self, 'shopowner')
-
 class ShopOwner(models.Model):
     user = models.OneToOneField(UserData, on_delete=models.CASCADE, related_name='shopowner')
     shop_name = models.CharField(max_length=100, blank=True, null=True)
@@ -166,6 +102,7 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     image = models.ImageField(upload_to='post_images/', blank=True, null=True)
+    
     author = models.ForeignKey(UserData, on_delete=models.CASCADE, related_name='posts')
     author_type = models.CharField(max_length=20, choices=[('user', 'User'), ('shop_owner', 'Shop Owner')])
     created_at = models.DateTimeField(auto_now_add=True)
