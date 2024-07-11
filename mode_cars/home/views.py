@@ -61,6 +61,32 @@ class DeleteAccountView(APIView):
         return Response({"message": "User account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
+class UserListView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+
+class UpdateUserInfoView(generics.UpdateAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = UserData.objects.all()
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+
+
+
 class UserDataViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = UserData.objects.all()

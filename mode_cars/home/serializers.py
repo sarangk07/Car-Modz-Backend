@@ -31,7 +31,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserData
-        fields = ('id', 'username', 'email', 'fullname', 'is_shopOwner')
+        fields = ('id', 'username', 'email', 'fullname', 'car','profile_pic', 'is_shopOwner')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,6 +69,17 @@ class TokenSerializers(TokenObtainPairSerializer):
         }
 
         return data
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
 
 class ShopOwnerSerializer(serializers.ModelSerializer):
     class Meta:
