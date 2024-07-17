@@ -73,10 +73,19 @@ class TokenSerializers(TokenObtainPairSerializer):
     
     
 
+# class PostSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Post
+#         fields = ('id', 'title', 'content', 'image', 'author', 'author_type', 'created_at')   
     
     
+
+class PostSerializer(serializers.ModelSerializer):
+    author = UserDataSerializer(read_only=True)
     
-    
+    class Meta:
+        model = Post
+        fields = ('id', 'title', 'content', 'image', 'author', 'author_type', 'created_at')    
     
     
     
@@ -84,17 +93,23 @@ class TokenSerializers(TokenObtainPairSerializer):
 class ShopOwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopOwner
-        fields = '__all__'
+        fields = ['id', 'user', 'shop_name', 'description', 'shop_image', 'shop_bg_img', 'rating', 'is_verified', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+
+
+
+
+
+
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
 
-class PostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Post
-        fields = '__all__'
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

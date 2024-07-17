@@ -3,11 +3,13 @@ from rest_framework.routers import DefaultRouter
 from . import views
 # from .views import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import RegisterView,UserInfoView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
+from .views import RegisterView,UserInfoView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
+from django.conf.urls.static import static
+from django.conf import settings
 
 router = DefaultRouter()
 # router.register(r'users', views.UserDataViewSet)
-router.register(r'shopowners', views.ShopOwnerViewSet)
+# router.register(r'shopowners', views.ShopOwnerViewSet)
 router.register(r'products', views.ProductViewSet)
 router.register(r'posts', views.PostViewSet)
 router.register(r'comments', views.CommentViewSet)
@@ -22,5 +24,6 @@ urlpatterns = [
     path('delete_account/', DeleteAccountView.as_view(), name='delete_account'),
     path('users/', UserListView.as_view(), name='user_list'),
     path('user/update/', UpdateUserInfoView.as_view(), name='update-user-info'),
+    path('create-shop-owner/', CreateShopOwnerView.as_view(), name='create_shop_owner'),
 
-]
+] 

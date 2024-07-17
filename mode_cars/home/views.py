@@ -16,12 +16,14 @@ from django.contrib.auth import get_user_model
 
 
 
-
-
-
+#login
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = TokenSerializers
 
+
+
+
+#register
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     def create(self, request, *args, **kwargs):
@@ -32,7 +34,7 @@ class RegisterView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-
+#loged-in userdata
 User = get_user_model()
 class UserInfoView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -51,6 +53,7 @@ class UserInfoView(APIView):
         return Response(serializer.data)
 
 
+#delete account
 class DeleteAccountView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -61,6 +64,7 @@ class DeleteAccountView(APIView):
         return Response({"message": "User account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 
+#all user details
 class UserListView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -71,9 +75,7 @@ class UserListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-
-
-
+#update-profile
 class UpdateUserInfoView(generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -85,6 +87,33 @@ class UpdateUserInfoView(generics.UpdateAPIView):
 
 
 
+#post view/create
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+        
+        
+ 
+ 
+ 
+class CreateShopOwnerView(generics.CreateAPIView):
+    queryset = ShopOwner.objects.all()
+    serializer_class = ShopOwnerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        serializer.save(user=user)      
+        
+        
+        
+        
+        
+
 
 
 class UserDataViewSet(viewsets.ModelViewSet):
@@ -92,17 +121,12 @@ class UserDataViewSet(viewsets.ModelViewSet):
     queryset = UserData.objects.all()
     serializer_class = UserDataSerializer
 
-class ShopOwnerViewSet(viewsets.ModelViewSet):
-    queryset = ShopOwner.objects.all()
-    serializer_class = ShopOwnerSerializer
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
