@@ -86,6 +86,41 @@ class ShopOwner(models.Model):
 
 
 
+
+class Follow(models.Model):
+    follower = models.ForeignKey(UserData, related_name='following', on_delete=models.CASCADE)
+    followed = models.ForeignKey(UserData, related_name='followers', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'followed')
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.followed.username}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Product(models.Model):
     owner = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name='products')
     product_name = models.CharField(max_length=100)

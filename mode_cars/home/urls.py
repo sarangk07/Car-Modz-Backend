@@ -25,5 +25,8 @@ urlpatterns = [
     path('users/', UserListView.as_view(), name='user_list'),
     path('user/update/', UpdateUserInfoView.as_view(), name='update-user-info'),
     path('create-shop-owner/', CreateShopOwnerView.as_view(), name='create_shop_owner'),
+    
+    path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
+    path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
 
 ] 

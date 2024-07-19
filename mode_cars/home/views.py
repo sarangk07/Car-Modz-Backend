@@ -7,12 +7,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import UserData, ShopOwner, Product, Post, Comment, Like
+from .models import UserData, ShopOwner, Product, Post, Comment, Like,Follow
 from .serializers import (
     UserDataSerializer, ShopOwnerSerializer, ProductSerializer, PostSerializer,
     CommentSerializer, LikeSerializer, RegisterSerializer, TokenSerializers,UserSerializer
 )
 from django.contrib.auth import get_user_model
+from rest_framework.decorators import api_view, permission_classes
+
 
 
 
@@ -36,6 +38,29 @@ class RegisterView(generics.CreateAPIView):
 
 #loged-in userdata
 User = get_user_model()
+
+
+# class UserInfoView(APIView):
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, username):
+#         if request.user.username != username:
+#             return Response({"error": "You can only access your own information"}, status=403)
+        
+#         user = User.objects.filter(username=username).first()
+#         print("user::::::",User )
+#         if not user:
+#             return Response({"error": "User not found"}, status=404)
+        
+#         serializer = UserDataSerializer(user)
+#         return Response(serializer.data)
+
+
+
+
+
+
 class UserInfoView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -45,12 +70,14 @@ class UserInfoView(APIView):
             return Response({"error": "You can only access your own information"}, status=403)
         
         user = User.objects.filter(username=username).first()
-        print("user::::::",User )
         if not user:
             return Response({"error": "User not found"}, status=404)
         
-        serializer = UserSerializer(user)
+        serializer = UserDataSerializer(user)
         return Response(serializer.data)
+    
+    
+    
 
 
 #delete account
@@ -71,7 +98,7 @@ class UserListView(APIView):
 
     def get(self, request):
         users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
+        serializer = UserDataSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -112,6 +139,58 @@ class CreateShopOwnerView(generics.CreateAPIView):
         
         
         
+       
+       
+       
+       
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def follow_user(request, user_id):
+    try:
+        user_to_follow = UserData.objects.get(id=user_id)
+    except UserData.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.user == user_to_follow:
+        return Response({'error': 'You cannot follow yourself'}, status=status.HTTP_400_BAD_REQUEST)
+
+    follow, created = Follow.objects.get_or_create(follower=request.user, followed=user_to_follow)
+
+    if created:
+        return Response({'message': f'You are now following {user_to_follow.username}'}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({'message': f'You are already following {user_to_follow.username}'}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unfollow_user(request, user_id):
+    try:
+        user_to_unfollow = UserData.objects.get(id=user_id)
+    except UserData.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    try:
+        follow = Follow.objects.get(follower=request.user, followed=user_to_unfollow)
+        follow.delete()
+        return Response({'message': f'You have unfollowed {user_to_unfollow.username}'}, status=status.HTTP_200_OK)
+    except Follow.DoesNotExist:
+        return Response({'error': f'You are not following {user_to_unfollow.username}'}, status=status.HTTP_400_BAD_REQUEST)       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
         
 
 

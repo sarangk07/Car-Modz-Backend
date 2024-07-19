@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import UserData, ShopOwner, Product, Post, Comment, Like
+from .models import UserData, ShopOwner, Product, Post, Comment, Like,Follow
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.exceptions import ValidationError
@@ -28,10 +28,78 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-class UserDataSerializer(serializers.ModelSerializer):
+# class UserDataSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = UserData
+#         fields = ('id', 'username', 'email', 'fullname', 'car','profile_pic', 'is_shopOwner')
+
+
+
+
+
+
+
+
+
+class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserData
-        fields = ('id', 'username', 'email', 'fullname', 'car','profile_pic', 'is_shopOwner')
+        fields = ('id', 'username', 'fullname', 'profile_pic')
+        
+        
+        
+class FollowSerializer(serializers.ModelSerializer):
+    user = SimpleUserSerializer(source='followed', read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = ('user',)
+        
+        
+        
+class UserDataSerializer(serializers.ModelSerializer):
+    followers = serializers.SerializerMethodField()
+    following = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserData
+        fields = ('id', 'username', 'email', 'fullname', 'car', 'profile_pic', 'is_shopOwner', 'followers', 'following')
+
+    def get_followers(self, obj):
+        followers = Follow.objects.filter(followed=obj)
+        return FollowSerializer(followers, many=True).data
+
+    def get_following(self, obj):
+        following = Follow.objects.filter(follower=obj)
+        return FollowSerializer(following, many=True).data
+
+
+
+# class UserDataSerializer(serializers.ModelSerializer):
+#     followers_count = serializers.SerializerMethodField()
+#     following_count = serializers.SerializerMethodField()
+    
+
+#     class Meta:
+#         model = UserData
+#         fields = ('id', 'username', 'email', 'fullname', 'car', 'profile_pic', 'is_shopOwner', 'followers_count', 'following_count')
+
+#     def get_followers_count(self, obj):
+#         return obj.followers.count()
+
+#     def get_following_count(self, obj):
+#         return obj.following.count()
+
+
+
+
+
+
+
+
+
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,6 +163,27 @@ class ShopOwnerSerializer(serializers.ModelSerializer):
         model = ShopOwner
         fields = ['id', 'user', 'shop_name', 'description', 'shop_image', 'shop_bg_img', 'rating', 'is_verified', 'created_at']
         read_only_fields = ['id', 'created_at']
+
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Follow
+        fields = ['id', 'follower', 'followed', 'created_at']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
