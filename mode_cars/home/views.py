@@ -12,9 +12,9 @@ from .serializers import (
     UserDataSerializer, ShopOwnerSerializer, ProductSerializer, PostSerializer,
     CommentSerializer, LikeSerializer, RegisterSerializer, TokenSerializers,UserSerializer
 )
+from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view, permission_classes
-
 
 
 
@@ -40,21 +40,6 @@ class RegisterView(generics.CreateAPIView):
 User = get_user_model()
 
 
-# class UserInfoView(APIView):
-#     authentication_classes = [JWTAuthentication]
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request, username):
-#         if request.user.username != username:
-#             return Response({"error": "You can only access your own information"}, status=403)
-        
-#         user = User.objects.filter(username=username).first()
-#         print("user::::::",User )
-#         if not user:
-#             return Response({"error": "User not found"}, status=404)
-        
-#         serializer = UserDataSerializer(user)
-#         return Response(serializer.data)
 
 
 
@@ -127,21 +112,102 @@ class PostViewSet(viewsets.ModelViewSet):
  
  
  
+# class CreateShopOwnerView(generics.CreateAPIView):
+#     queryset = ShopOwner.objects.all()
+#     serializer_class = ShopOwnerSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def create(self, request, *args, **kwargs):
+#         user = request.user
+#         if hasattr(user, 'shopowner'):
+#             return Response({"error": "Shop profile already exists."}, status=status.HTTP_400_BAD_REQUEST)
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         serializer.save(user=user)
+#         headers = self.get_success_headers(serializer.data)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+
+
+# class CreateShopOwnerView(generics.CreateAPIView):
+#     queryset = ShopOwner.objects.all()
+#     serializer_class = ShopOwnerSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def perform_create(self, serializer):
+#         user = self.request.user
+#         serializer.save(user=user)
+
+# class ShopOwnerDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = ShopOwner.objects.all()
+#     serializer_class = ShopOwnerSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_object(self):
+#         user = self.request.user
+#         if not hasattr(user, 'shopowner'):
+#             raise serializers.ValidationError({"error": "Shop profile does not exist."})
+#         return user.shopowner
+
+#     def perform_update(self, serializer):
+#         serializer.save(user=self.request.user) 
+        
+
+
 class CreateShopOwnerView(generics.CreateAPIView):
     queryset = ShopOwner.objects.all()
     serializer_class = ShopOwnerSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        if hasattr(user, 'shopowner'):
+            return Response({"error": "Shop profile already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=user)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class ShopOwnerDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ShopOwner.objects.all()
+    serializer_class = ShopOwnerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
         user = self.request.user
-        serializer.save(user=user)      
+        if not hasattr(user, 'shopowner'):
+            raise serializers.ValidationError({"error": "Shop profile does not exist."})
+        return user.shopowner
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
         
         
-        
-        
-       
-       
-       
+class ShopIdView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if hasattr(user, 'shopowner'):
+            return Response({"shop_id": user.shopowner.id})
+        return Response({"shop_id": None})      
+    
+class ShopDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk, format=None):
+        try:
+            shop = ShopOwner.objects.get(pk=pk)
+            serializer = ShopOwnerSerializer(shop)
+            return Response(serializer.data)
+        except ShopOwner.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    
        
 
 

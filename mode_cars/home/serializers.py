@@ -101,10 +101,18 @@ class UserDataSerializer(serializers.ModelSerializer):
 
 
 
+
 class UserSerializer(serializers.ModelSerializer):
+    shop_id = serializers.SerializerMethodField()
+
     class Meta:
         model = UserData
-        fields = ('id', 'username', 'email', 'fullname', 'car', 'profile_pic', 'is_shopOwner')
+        fields = ['id', 'username', 'email', 'fullname', 'car', 'profile_pic', 'is_shopOwner', 'shop_id']
+
+    def get_shop_id(self, obj):
+        if hasattr(obj, 'shopowner'):
+            return obj.shopowner.id
+        return None
 
 
 class TokenSerializers(TokenObtainPairSerializer):
@@ -162,7 +170,7 @@ class ShopOwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopOwner
         fields = ['id', 'user', 'shop_name', 'description', 'shop_image', 'shop_bg_img', 'rating', 'is_verified', 'created_at']
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'created_at', 'user'] 
 
 
 

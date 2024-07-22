@@ -59,6 +59,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "mode_cars.urls"
 CORS_ALLOW_ALL_ORIGINS = True  # For development only. Configure more strictly for production.
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    # Add other origins if needed
+]
+
 
 TEMPLATES = [
     {

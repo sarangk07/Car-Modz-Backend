@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 # from .views import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import RegisterView,UserInfoView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
+from .views import ShopIdView,RegisterView,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -24,9 +24,15 @@ urlpatterns = [
     path('delete_account/', DeleteAccountView.as_view(), name='delete_account'),
     path('users/', UserListView.as_view(), name='user_list'),
     path('user/update/', UpdateUserInfoView.as_view(), name='update-user-info'),
-    path('create-shop-owner/', CreateShopOwnerView.as_view(), name='create_shop_owner'),
+    # path('create-shop-owner/', CreateShopOwnerView.as_view(), name='create_shop_owner'),
+    path('shop/create/', CreateShopOwnerView.as_view(), name='create-shop-owner'),
+    path('shop/', ShopOwnerDetailView.as_view(), name='shop-owner-detail'),
+    
     
     path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
     path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
+    path('shop_id/', ShopIdView.as_view(), name='shop-id'),
+    path('shop/<int:pk>/', ShopDetailView.as_view(), name='shop-detail'),
+    
 
 ] 
