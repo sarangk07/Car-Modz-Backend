@@ -3,17 +3,15 @@ from rest_framework.routers import DefaultRouter
 from . import views
 # from .views import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import ShopIdView,RegisterView,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
+from .views import ShopIdView,RegisterView,LikeStatusView,CommentViewSet,DislikeView,LikeViewSet,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
 from django.conf.urls.static import static
 from django.conf import settings
 
 router = DefaultRouter()
-# router.register(r'users', views.UserDataViewSet)
-# router.register(r'shopowners', views.ShopOwnerViewSet)
 router.register(r'products', views.ProductViewSet)
 router.register(r'posts', views.PostViewSet)
-router.register(r'comments', views.CommentViewSet)
-router.register(r'likes', views.LikeViewSet)
+router.register(r'comments', CommentViewSet)
+router.register(r'likes', LikeViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -28,6 +26,8 @@ urlpatterns = [
     path('shop/create/', CreateShopOwnerView.as_view(), name='create-shop-owner'),
     path('shop/', ShopOwnerDetailView.as_view(), name='shop-owner-detail'),
     
+    path('posts/<int:post_id>/like-status/', LikeStatusView.as_view(), name='like-status'),
+    path('posts/<int:post_id>/dislike/', DislikeView.as_view(), name='dislike-post'),
     
     path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
     path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),

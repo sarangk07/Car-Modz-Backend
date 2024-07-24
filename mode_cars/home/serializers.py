@@ -34,28 +34,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 #         fields = ('id', 'username', 'email', 'fullname', 'car','profile_pic', 'is_shopOwner')
 
 
-
-
-
-
-
-
-
 class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserData
         fields = ('id', 'username', 'fullname', 'profile_pic')
         
-        
-        
-class FollowSerializer(serializers.ModelSerializer):
-    user = SimpleUserSerializer(source='followed', read_only=True)
 
+class FollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
-        fields = ('user',)
-        
-        
+        fields = ['id', 'follower', 'followed', 'created_at']       
+              
         
 class UserDataSerializer(serializers.ModelSerializer):
     followers = serializers.SerializerMethodField()
@@ -72,34 +61,6 @@ class UserDataSerializer(serializers.ModelSerializer):
     def get_following(self, obj):
         following = Follow.objects.filter(follower=obj)
         return FollowSerializer(following, many=True).data
-
-
-
-# class UserDataSerializer(serializers.ModelSerializer):
-#     followers_count = serializers.SerializerMethodField()
-#     following_count = serializers.SerializerMethodField()
-    
-
-#     class Meta:
-#         model = UserData
-#         fields = ('id', 'username', 'email', 'fullname', 'car', 'profile_pic', 'is_shopOwner', 'followers_count', 'following_count')
-
-#     def get_followers_count(self, obj):
-#         return obj.followers.count()
-
-#     def get_following_count(self, obj):
-#         return obj.following.count()
-
-
-
-
-
-
-
-
-
-
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -147,24 +108,60 @@ class TokenSerializers(TokenObtainPairSerializer):
         return data
     
     
-    
 
-# class PostSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Post
-#         fields = ('id', 'title', 'content', 'image', 'author', 'author_type', 'created_at')   
     
     
-
 class PostSerializer(serializers.ModelSerializer):
     author = UserDataSerializer(read_only=True)
     
     class Meta:
         model = Post
         fields = ('id', 'title', 'content', 'image', 'author', 'author_type', 'created_at')    
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = SimpleUserSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'post', 'user', 'content', 'created_at')
+        read_only_fields = ('id', 'user', 'created_at')
+
+class LikeSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ('id', 'post', 'user', 'created_at')
     
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class ShopOwnerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -174,46 +171,9 @@ class ShopOwnerSerializer(serializers.ModelSerializer):
 
 
 
-class FollowSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Follow
-        fields = ['id', 'follower', 'followed', 'created_at']
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
 
 
-
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = '__all__'
-
-class LikeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Like
-        fields = '__all__'

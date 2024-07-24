@@ -15,13 +15,13 @@ from .serializers import (
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
 
 
 
 #login
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = TokenSerializers
-
 
 
 
@@ -38,12 +38,6 @@ class RegisterView(generics.CreateAPIView):
 
 #loged-in userdata
 User = get_user_model()
-
-
-
-
-
-
 
 
 class UserInfoView(APIView):
@@ -109,6 +103,64 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
         
         
+ 
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Write permissions are only allowed to the owner of the comment.
+        return obj.user == request.user or request.user.is_admin
+
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data['user'] = request.user.id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class LikeStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, post_id):
+        is_liked = Like.objects.filter(post_id=post_id, user=request.user).exists()
+        return Response({'is_liked': is_liked})
+
+
+class LikeViewSet(viewsets.ModelViewSet):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class DislikeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        try:
+            like = Like.objects.get(post_id=post_id, user=request.user)
+            like.delete()
+            return Response({'message': 'Disliked successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except Like.DoesNotExist:
+            return Response({'error': 'Like does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+ 
  
  
  
@@ -185,8 +237,11 @@ class ShopOwnerDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         serializer.save(user=self.request.user)
-        
-        
+    
+    
+
+    
+   
 class ShopIdView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -243,21 +298,16 @@ def unfollow_user(request, user_id):
         return Response({'message': f'You have unfollowed {user_to_unfollow.username}'}, status=status.HTTP_200_OK)
     except Follow.DoesNotExist:
         return Response({'error': f'You are not following {user_to_unfollow.username}'}, status=status.HTTP_400_BAD_REQUEST)       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-       
-        
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -273,10 +323,5 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 
-class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
 
-class LikeViewSet(viewsets.ModelViewSet):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
+
