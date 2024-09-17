@@ -16,6 +16,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
+
 
 
 
@@ -101,6 +103,12 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.author != request.user:
+            return Response({"detail": "You do not have permission to delete this post."}, status=status.HTTP_403_FORBIDDEN)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
         
         
  
@@ -263,7 +271,10 @@ class ShopDetailView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     
-       
+class ShopOwnerListView(generics.ListAPIView):
+    queryset = ShopOwner.objects.all()
+    serializer_class = ShopOwnerSerializer
+    permission_classes = [IsAuthenticated]
 
 
 @api_view(['POST'])
@@ -308,6 +319,20 @@ def unfollow_user(request, user_id):
 
 
 
+from django.shortcuts import render
+# Chat room view
+def room(request, room_name):
+    return render(request, 'chat/room.html', {
+        'room_name': room_name
+    })
+    
+    
+    
+    
+
+
+
+
 
 
 
@@ -317,9 +342,30 @@ class UserDataViewSet(viewsets.ModelViewSet):
     serializer_class = UserDataSerializer
 
 
+
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        if not hasattr(self.request.user, 'shopowner'):
+            raise PermissionDenied("Only shop owners can create products.")
+        serializer.save(owner=self.request.user.shopowner)
+
+    
+    
+    def perform_update(self, serializer):
+        if hasattr(self.request.user, 'shopowner'):
+            serializer.save(owner=self.request.user.shopowner)
+        else:
+            raise PermissionDenied("Only shop owners can edit products.")
+        
+    def get_queryset(self):
+        
+        return Product.objects.all()
+
+
 
 
 

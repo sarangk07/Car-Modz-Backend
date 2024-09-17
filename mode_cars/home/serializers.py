@@ -170,10 +170,15 @@ class ShopOwnerSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'user'] 
 
 
-
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+        read_only_fields = ['owner']  # Ensure owner is read-only
+
+    def create(self, validated_data):
+        validated_data['owner'] = self.context['request'].user.shopowner
+        return super().create(validated_data)
+
 
 

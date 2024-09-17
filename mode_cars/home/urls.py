@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 # from .views import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import ShopIdView,RegisterView,LikeStatusView,CommentViewSet,DislikeView,LikeViewSet,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
+from .views import ShopIdView,RegisterView,ShopOwnerListView,LikeStatusView,CommentViewSet,DislikeView,LikeViewSet,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -33,6 +33,9 @@ urlpatterns = [
     path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
     path('shop_id/', ShopIdView.as_view(), name='shop-id'),
     path('shop/<int:pk>/', ShopDetailView.as_view(), name='shop-detail'),
+    path('shops/', ShopOwnerListView.as_view(), name='shop-owner-list'),
     
+    
+    path('chat/<str:room_name>/', views.room, name='room'),
 
 ] 
