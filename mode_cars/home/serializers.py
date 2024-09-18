@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import UserData, ShopOwner, Product, Post, Comment, Like,Follow
+from .models import UserData, ShopOwner, Product, Post, Comment, Like,Follow,Group
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.core.exceptions import ValidationError
@@ -146,23 +146,6 @@ class LikeSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class ShopOwnerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopOwner
@@ -181,4 +164,27 @@ class ProductSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+
+
+
+
+
+
+
+# class GroupSerializer(serializers.ModelSerializer):
+#     owner = serializers.ReadOnlyField(source='owner.username')
+#     members = SimpleUserSerializer(many=True, read_only=True)  # To display members
+
+#     class Meta:
+#         model = Group
+#         fields = ['id', 'name', 'description', 'owner', 'members', 'created_at']
+        
+        
+class GroupSerializer(serializers.ModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    members = SimpleUserSerializer(many=True, read_only=True)  # To display members
+
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'description', 'owner', 'members', 'created_at', 'group_image'] 
 

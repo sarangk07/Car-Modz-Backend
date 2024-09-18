@@ -7,16 +7,17 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import UserData, ShopOwner, Product, Post, Comment, Like,Follow
+from .models import UserData, ShopOwner, Product, Post, Comment, Like,Follow,Group
 from .serializers import (
     UserDataSerializer, ShopOwnerSerializer, ProductSerializer, PostSerializer,
-    CommentSerializer, LikeSerializer, RegisterSerializer, TokenSerializers,UserSerializer
+    CommentSerializer, LikeSerializer, RegisterSerializer, TokenSerializers,UserSerializer,GroupSerializer
 )
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
 from rest_framework.exceptions import PermissionDenied
+from .serializers import SimpleUserSerializer
 
 
 
@@ -371,3 +372,78 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 
 
+
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)  # Set the owner to the current user
+
+@api_view(['POST'])
+def join_group(request, group_id):
+    try:
+        group = Group.objects.get(id=group_id)
+    except Group.DoesNotExist:
+        return Response({"error": "Group not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    user = request.user
+    
+    # Check if the user is already a member
+    if user in group.members.all():
+        return Response({"error": "User is already a member of this group"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Add the user to the group
+    group.members.add(user)
+    
+    # Serialize the group data to return
+    serializer = GroupSerializer(group)
+    
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def leave_group(request, group_id):
+    try:
+        group = Group.objects.get(id=group_id)
+    except Group.DoesNotExist:
+        return Response({"error": "Group not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    user = request.user
+    
+    # Check if the user is a member
+    if user not in group.members.all():
+        return Response({"error": "User is not a member of this group"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Remove the user from the group
+    group.members.remove(user)
+    
+    return Response({"message": "Successfully left the group"}, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+def group_members(request, group_id):
+    try:
+        group = Group.objects.get(id=group_id)
+    except Group.DoesNotExist:
+        return Response({"error": "Group not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    members = group.members.all()
+    serializer = SimpleUserSerializer(members, many=True)
+    
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+class DeleteGroupView(generics.DestroyAPIView):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        group = generics.get_object_or_404(Group, pk=self.kwargs['group_id'])
+        # Check if the current user is the owner of the group
+        if group.owner != self.request.user:
+            raise PermissionDenied("You do not have permission to delete this group.")
+        return group

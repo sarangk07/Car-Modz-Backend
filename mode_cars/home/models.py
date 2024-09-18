@@ -154,3 +154,17 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name
+    
+    
+    
+    
+class Group(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    owner = models.ForeignKey(UserData, related_name='owned_groups', on_delete=models.CASCADE)
+    members = models.ManyToManyField(UserData, related_name='groups', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    group_image = models.ImageField(upload_to='group_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.name

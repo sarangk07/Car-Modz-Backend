@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 # from .views import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import ShopIdView,RegisterView,ShopOwnerListView,LikeStatusView,CommentViewSet,DislikeView,LikeViewSet,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
+from .views import group_members,DeleteGroupView,leave_group,join_group,ShopIdView,RegisterView,ShopOwnerListView,LikeStatusView,CommentViewSet,DislikeView,LikeViewSet,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -12,6 +12,8 @@ router.register(r'products', views.ProductViewSet)
 router.register(r'posts', views.PostViewSet)
 router.register(r'comments', CommentViewSet)
 router.register(r'likes', LikeViewSet)
+router.register(r'groups', views.GroupViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -37,5 +39,16 @@ urlpatterns = [
     
     
     path('chat/<str:room_name>/', views.room, name='room'),
+    
+    
+    
+    
+    path('groups/<int:group_id>/join/', join_group, name='join_group'),
+    path('groups/<int:group_id>/leave/', leave_group, name='leave_group'),
+    path('groups/<int:group_id>/members/', group_members, name='group_members'),
+    path('groups/<int:group_id>/delete/', DeleteGroupView.as_view(), name='delete-group'),
+
+
+    
 
 ] 
