@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from . import views
 # from .views import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import group_members,DeleteGroupView,leave_group,join_group,ShopIdView,RegisterView,ShopOwnerListView,LikeStatusView,CommentViewSet,DislikeView,LikeViewSet,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
+from .views import group_members,UserInfoByIdView,DeleteGroupView,leave_group,join_group,ShopIdView,RegisterView,ShopOwnerListView,LikeStatusView,CommentViewSet,DislikeView,LikeViewSet,ShopDetailView,UserInfoView,ShopOwnerDetailView,CreateShopOwnerView,CustomTokenObtainPairView,DeleteAccountView,UserListView,UpdateUserInfoView
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -21,6 +21,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  
     path('register/', RegisterView.as_view(), name='register'),
     path('user-info/<str:username>/', UserInfoView.as_view(), name='user_info'),
+    path('user-info/id/<int:user_id>/', UserInfoByIdView.as_view(), name='user_info_by_id'),
     path('delete_account/', DeleteAccountView.as_view(), name='delete_account'),
     path('users/', UserListView.as_view(), name='user_list'),
     path('user/update/', UpdateUserInfoView.as_view(), name='update-user-info'),

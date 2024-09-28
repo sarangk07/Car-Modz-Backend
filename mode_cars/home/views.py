@@ -18,6 +18,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
 from rest_framework.exceptions import PermissionDenied
 from .serializers import SimpleUserSerializer
+from rest_framework.decorators import action
+
+
 
 
 
@@ -84,6 +87,24 @@ class UserListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+#user id view
+class UserInfoByIdView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+        
+        serializer = UserDataSerializer(user)
+        return Response(serializer.data)
+
+
+
+
 #update-profile
 class UpdateUserInfoView(generics.UpdateAPIView):
     authentication_classes = [JWTAuthentication]
@@ -110,6 +131,18 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({"detail": "You do not have permission to delete this post."}, status=status.HTTP_403_FORBIDDEN)
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=['get'], url_path='user-posts/(?P<user_id>[^/.]+)')
+    def user_posts(self, request, user_id=None):
+        """
+        Custom action to get all posts by a specific user.
+        """
+        posts = Post.objects.filter(author_id=user_id)
+        if posts.exists():
+            serializer = self.get_serializer(posts, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "No posts found for this user."}, status=status.HTTP_404_NOT_FOUND)
         
         
  
@@ -171,49 +204,6 @@ class DislikeView(APIView):
             return Response({'error': 'Like does not exist'}, status=status.HTTP_400_BAD_REQUEST)
  
  
- 
- 
-# class CreateShopOwnerView(generics.CreateAPIView):
-#     queryset = ShopOwner.objects.all()
-#     serializer_class = ShopOwnerSerializer
-#     permission_classes = [IsAuthenticated]
-
-#     def create(self, request, *args, **kwargs):
-#         user = request.user
-#         if hasattr(user, 'shopowner'):
-#             return Response({"error": "Shop profile already exists."}, status=status.HTTP_400_BAD_REQUEST)
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save(user=user)
-#         headers = self.get_success_headers(serializer.data)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-
-
-
-# class CreateShopOwnerView(generics.CreateAPIView):
-#     queryset = ShopOwner.objects.all()
-#     serializer_class = ShopOwnerSerializer
-#     permission_classes = [IsAuthenticated]
-
-#     def perform_create(self, serializer):
-#         user = self.request.user
-#         serializer.save(user=user)
-
-# class ShopOwnerDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = ShopOwner.objects.all()
-#     serializer_class = ShopOwnerSerializer
-#     permission_classes = [IsAuthenticated]
-
-#     def get_object(self):
-#         user = self.request.user
-#         if not hasattr(user, 'shopowner'):
-#             raise serializers.ValidationError({"error": "Shop profile does not exist."})
-#         return user.shopowner
-
-#     def perform_update(self, serializer):
-#         serializer.save(user=self.request.user) 
-        
 
 
 class CreateShopOwnerView(generics.CreateAPIView):
